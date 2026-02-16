@@ -180,19 +180,19 @@ export const AdminContextProvider = ({ children }) => {
                 // If we have a trigger, it might be enough. 
                 // But to be sure (like backend did direct DB insert):
                 if (authData.user) {
-                    // We can try to update the user immediately to ensure isAdmin is true if passed
-                    // This requires the current session (Admin) to have permission.
-                    // The Admin IS logged in (main supabase client).
-                    if (data.isAdmin) {
-                        // Wait a brief moment for trigger if it exists
-                        // Or just upsert.
-                        const { error: profileError } = await supabase
-                            .from('users')
-                            .update({ isAdmin: true, name: data.name })
-                            .eq('id', authData.user.id);
+                    // Convert string "true"/"false" to actual boolean
+                    const isAdminValue = data.isAdmin === "true";
 
-                        if (profileError) console.log("Profile update error", profileError);
-                    }
+                    // Update profile with correct types
+                    const { error: profileError } = await supabase
+                        .from('users')
+                        .update({
+                            "isAdmin": isAdminValue,
+                            "name": data.name
+                        })
+                        .eq('id', authData.user.id);
+
+                    if (profileError) console.log("Profile update error", profileError);
                 }
 
                 toast.success("کاربر با موفقیت ساخته شد", { position: "bottom-center", style: toastStyle });
@@ -370,11 +370,10 @@ export const AdminContextProvider = ({ children }) => {
             subDescription3: data.subDescription3,
             subTitle4: data.subTitle4,
             subDescription4: data.subDescription4,
-            catId: data.catId,
+            catId: parseInt(data.catId),
             userId: userId,
             image: imageUrl,
             video: videoUrl
-            // add images array logic if needed
         };
 
         const { error } = await supabase.from('news').insert(newsData);

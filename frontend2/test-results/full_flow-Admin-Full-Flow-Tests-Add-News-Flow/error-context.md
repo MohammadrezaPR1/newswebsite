@@ -1,0 +1,208 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - generic [ref=e9]: مدیانا
+          - generic [ref=e10]: پنل خبرنگار
+      - generic [ref=e11]:
+        - link "کاربر مونیوز تنظیمات پروفایل avatar" [ref=e12] [cursor=pointer]:
+          - /url: /admin-update-profile/9386a397-4540-4602-b79c-939a10482ed7
+          - generic [ref=e13]:
+            - paragraph [ref=e14]: کاربر مونیوز
+            - paragraph [ref=e15]: تنظیمات پروفایل
+          - img "avatar" [ref=e17]
+        - generic [ref=e18]:
+          - link "مشاهده سایت" [ref=e19] [cursor=pointer]:
+            - /url: /
+            - img [ref=e20]
+          - button "خروج" [ref=e24]:
+            - img [ref=e25]
+    - generic [ref=e28]:
+      - navigation [ref=e29]:
+        - generic [ref=e31]:
+          - generic [ref=e32]: M
+          - generic [ref=e33]: پنل مدیانا
+        - list [ref=e35]:
+          - listitem [ref=e36]:
+            - link "داشبورد" [ref=e37] [cursor=pointer]:
+              - /url: /admin-dashboard
+              - img [ref=e39]
+              - generic [ref=e41]: داشبورد
+          - listitem [ref=e42]:
+            - button "مدیریت اخبار" [ref=e43]:
+              - img [ref=e45]
+              - generic [ref=e48]: مدیریت اخبار
+              - img [ref=e50]
+            - list [ref=e52]:
+              - listitem [ref=e53]:
+                - link "لیست اخبار" [ref=e54] [cursor=pointer]:
+                  - /url: /admin-view-news
+              - listitem [ref=e55]:
+                - link "ارسال خبر جدید" [ref=e56] [cursor=pointer]:
+                  - /url: /admin-add-news
+          - listitem [ref=e57]:
+            - button "مدیریت کاربران" [ref=e58]:
+              - img [ref=e60]
+              - generic [ref=e62]: مدیریت کاربران
+              - img [ref=e64]
+          - listitem [ref=e66]:
+            - button "رسانه و ویدیو" [ref=e67]:
+              - img [ref=e69]
+              - generic [ref=e71]: رسانه و ویدیو
+              - img [ref=e73]
+          - listitem [ref=e75]:
+            - link "نظرات کاربران" [ref=e76] [cursor=pointer]:
+              - /url: /admin-view-comments
+              - img [ref=e78]
+              - generic [ref=e80]: نظرات کاربران
+          - listitem [ref=e81]:
+            - button "دسته‌بندی‌ها" [ref=e82]:
+              - img [ref=e84]
+              - generic [ref=e86]: دسته‌بندی‌ها
+              - img [ref=e88]
+        - button "خروج از سیستم" [ref=e91]:
+          - img [ref=e92]
+          - generic [ref=e94]: خروج از سیستم
+      - main [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - generic [ref=e98]:
+              - heading "داشبورد مدیریت" [level=1] [ref=e99]
+              - paragraph [ref=e100]: در حال حاضر 5 مدیر بر روی سیستم فعال هستند
+            - generic [ref=e103]: ۱۴۰۴ بهمن ۲۷, دوشنبه
+          - generic [ref=e105]:
+            - generic [ref=e106]:
+              - generic [ref=e107]:
+                - generic [ref=e109]: 📰
+                - generic [ref=e110]:
+                  - paragraph [ref=e111]: "0"
+                  - text: آمار کل
+              - heading "کل مقالات" [level=3] [ref=e113]
+            - generic [ref=e114]:
+              - generic [ref=e115]:
+                - generic [ref=e117]: 📂
+                - generic [ref=e118]:
+                  - paragraph [ref=e119]: "2"
+                  - text: آمار کل
+              - heading "دسته‌بندی‌ها" [level=3] [ref=e121]
+            - generic [ref=e122]:
+              - generic [ref=e123]:
+                - generic [ref=e125]: 👥
+                - generic [ref=e126]:
+                  - paragraph [ref=e127]: "5"
+                  - text: آمار کل
+              - heading "کاربران فعال" [level=3] [ref=e129]
+            - generic [ref=e130]:
+              - generic [ref=e131]:
+                - generic [ref=e133]: ✉️
+                - generic [ref=e134]:
+                  - paragraph [ref=e135]: "0"
+                  - text: آمار کل
+              - heading "نظرات جدید" [level=3] [ref=e137]
+            - generic [ref=e138]:
+              - generic [ref=e139]:
+                - generic [ref=e141]: 🎥
+                - generic [ref=e142]:
+                  - paragraph [ref=e143]: "0"
+                  - text: آمار کل
+              - heading "ویدیوها" [level=3] [ref=e145]
+            - generic [ref=e146]:
+              - generic [ref=e147]:
+                - generic [ref=e149]: ❤️
+                - generic [ref=e150]:
+                  - paragraph [ref=e151]: "0"
+                  - text: آمار کل
+              - heading "لایک‌های کل" [level=3] [ref=e153]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - heading "انتشار خبر جدید" [level=2] [ref=e158]
+                - paragraph [ref=e159]: محتوای غنی و جذاب برای مخاطبان خود ایجاد کنید
+              - generic [ref=e160]:
+                - button "انصراف" [ref=e161]:
+                  - img [ref=e162]
+                  - text: انصراف
+                - button "آماده انتشار" [ref=e165]:
+                  - img [ref=e166]
+                  - text: آماده انتشار
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - img [ref=e174]
+                  - heading "اطلاعات پایه خبر" [level=3] [ref=e177]
+                - generic [ref=e178]:
+                  - generic [ref=e179]:
+                    - text: عنوان جذاب برای خبر
+                    - 'textbox "مثال: کشف جدید در حوزه تکنولوژی هوش مصنوعی..." [ref=e180]': E2E Test News Title
+                  - generic [ref=e181]:
+                    - text: بدنه اصلی محتوا
+                    - textbox "شرح کامل خبر را اینجا بنویسید..." [active] [ref=e182]: E2E Test News Description Content
+                  - generic [ref=e183]:
+                    - text: دسته‌بندی موضوعی
+                    - combobox [ref=e184]:
+                      - option "انتخاب دسته مناسب"
+                      - option "سینما و تلوزیون" [selected]
+                      - option "ورزشی"
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - img [ref=e188]
+                  - heading "رسانه و گالری" [level=3] [ref=e192]
+                - generic [ref=e193]:
+                  - generic [ref=e194]:
+                    - generic [ref=e195]: تصویر شاخص هوشمند
+                    - generic [ref=e197]:
+                      - img [ref=e199]
+                      - paragraph [ref=e200]: برای انتخاب تصویر شاخص کلیک کنید
+                      - button "Choose File" [ref=e201] [cursor=pointer]
+                  - generic [ref=e202]:
+                    - generic [ref=e203]: ویدیو خبر (مکمل محتوا)
+                    - generic [ref=e204]:
+                      - img [ref=e206]
+                      - paragraph [ref=e209]: آپلود ویدیوی اختصاصی (اختیاری)
+                      - button "Choose File" [ref=e210] [cursor=pointer]
+                  - generic [ref=e211]:
+                    - generic [ref=e212]: گالری تصاویر خبر
+                    - generic [ref=e213]:
+                      - img [ref=e216] [cursor=pointer]
+                      - paragraph [ref=e217]: میتوانید چندین تصویر همزمان انتخاب کنید تا یک اسلایدر در خبر داشته باشید
+              - generic [ref=e218]:
+                - generic [ref=e219]:
+                  - img [ref=e221]
+                  - heading "بخش‌های تکمیلی (ساب‌تیتر)" [level=3] [ref=e225]
+                - generic [ref=e226]:
+                  - generic [ref=e227]:
+                    - generic [ref=e228]:
+                      - generic [ref=e229]: ۰1
+                      - heading "بخش تکمیلی شماره 1" [level=4] [ref=e230]
+                    - generic [ref=e231]:
+                      - textbox "عنوان فرعی 1..." [ref=e233]
+                      - textbox "توضیحات این بخش را وارد کنید..." [ref=e235]
+                  - generic [ref=e236]:
+                    - generic [ref=e237]:
+                      - generic [ref=e238]: ۰2
+                      - heading "بخش تکمیلی شماره 2" [level=4] [ref=e239]
+                    - generic [ref=e240]:
+                      - textbox "عنوان فرعی 2..." [ref=e242]
+                      - textbox "توضیحات این بخش را وارد کنید..." [ref=e244]
+                  - generic [ref=e245]:
+                    - generic [ref=e246]:
+                      - generic [ref=e247]: ۰3
+                      - heading "بخش تکمیلی شماره 3" [level=4] [ref=e248]
+                    - generic [ref=e249]:
+                      - textbox "عنوان فرعی 3..." [ref=e251]
+                      - textbox "توضیحات این بخش را وارد کنید..." [ref=e253]
+                  - generic [ref=e254]:
+                    - generic [ref=e255]:
+                      - generic [ref=e256]: ۰4
+                      - heading "بخش تکمیلی شماره 4" [level=4] [ref=e257]
+                    - generic [ref=e258]:
+                      - textbox "عنوان فرعی 4..." [ref=e260]
+                      - textbox "توضیحات این بخش را وارد کنید..." [ref=e262]
+  - region "Notifications Alt+T"
+```

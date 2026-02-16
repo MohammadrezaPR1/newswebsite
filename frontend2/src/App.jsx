@@ -53,7 +53,6 @@ function App() {
         <Route path='/login' element={<Login />} ></Route>
         <Route path='/about' element={<AboutUs />} > </Route>
         <Route path='/contact' element={<ContactUs />} > </Route>
-        <Route path='*' element={<NotFound />} ></Route>
         {
           userId && (
             <>
@@ -92,7 +91,7 @@ function App() {
             </>
           )
         }
-
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <ToastContainer />
     </>

@@ -1,0 +1,161 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - button [ref=e6]:
+          - img [ref=e7]
+        - generic [ref=e8]:
+          - generic [ref=e9]: مدیانا
+          - generic [ref=e10]: پنل خبرنگار
+      - generic [ref=e11]:
+        - link "کاربر مونیوز تنظیمات پروفایل avatar" [ref=e12] [cursor=pointer]:
+          - /url: /admin-update-profile/9386a397-4540-4602-b79c-939a10482ed7
+          - generic [ref=e13]:
+            - paragraph [ref=e14]: کاربر مونیوز
+            - paragraph [ref=e15]: تنظیمات پروفایل
+          - img "avatar" [ref=e17]
+        - generic [ref=e18]:
+          - link "مشاهده سایت" [ref=e19] [cursor=pointer]:
+            - /url: /
+            - img [ref=e20]
+          - button "خروج" [ref=e24]:
+            - img [ref=e25]
+    - generic [ref=e28]:
+      - navigation [ref=e29]:
+        - generic [ref=e31]:
+          - generic [ref=e32]: M
+          - generic [ref=e33]: پنل مدیانا
+        - list [ref=e35]:
+          - listitem [ref=e36]:
+            - link "داشبورد" [ref=e37] [cursor=pointer]:
+              - /url: /admin-dashboard
+              - img [ref=e39]
+              - generic [ref=e41]: داشبورد
+          - listitem [ref=e43]:
+            - button "مدیریت اخبار" [ref=e44]:
+              - img [ref=e46]
+              - generic [ref=e49]: مدیریت اخبار
+              - img [ref=e51]
+          - listitem [ref=e53]:
+            - button "مدیریت کاربران" [ref=e54]:
+              - img [ref=e56]
+              - generic [ref=e58]: مدیریت کاربران
+              - img [ref=e60]
+          - listitem [ref=e62]:
+            - button "رسانه و ویدیو" [ref=e63]:
+              - img [ref=e65]
+              - generic [ref=e67]: رسانه و ویدیو
+              - img [ref=e69]
+          - listitem [ref=e71]:
+            - link "نظرات کاربران" [ref=e72] [cursor=pointer]:
+              - /url: /admin-view-comments
+              - img [ref=e74]
+              - generic [ref=e76]: نظرات کاربران
+          - listitem [ref=e77]:
+            - button "دسته‌بندی‌ها" [ref=e78]:
+              - img [ref=e80]
+              - generic [ref=e82]: دسته‌بندی‌ها
+              - img [ref=e84]
+        - button "خروج از سیستم" [ref=e87]:
+          - img [ref=e88]
+          - generic [ref=e90]: خروج از سیستم
+      - main [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - generic [ref=e94]:
+              - heading "داشبورد مدیریت" [level=1] [ref=e95]
+              - paragraph [ref=e96]: در حال حاضر 0 مدیر بر روی سیستم فعال هستند
+            - generic [ref=e99]: ۱۴۰۴ بهمن ۲۷, دوشنبه
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e105]: 📰
+                - generic [ref=e106]:
+                  - paragraph [ref=e107]: "0"
+                  - text: آمار کل
+              - heading "کل مقالات" [level=3] [ref=e109]
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e113]: 📂
+                - generic [ref=e114]:
+                  - paragraph [ref=e115]: "0"
+                  - text: آمار کل
+              - heading "دسته‌بندی‌ها" [level=3] [ref=e117]
+            - generic [ref=e118]:
+              - generic [ref=e119]:
+                - generic [ref=e121]: 👥
+                - generic [ref=e122]:
+                  - paragraph [ref=e123]: "0"
+                  - text: آمار کل
+              - heading "کاربران فعال" [level=3] [ref=e125]
+            - generic [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e129]: ✉️
+                - generic [ref=e130]:
+                  - paragraph [ref=e131]: "0"
+                  - text: آمار کل
+              - heading "نظرات جدید" [level=3] [ref=e133]
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - generic [ref=e137]: 🎥
+                - generic [ref=e138]:
+                  - paragraph [ref=e139]: "0"
+                  - text: آمار کل
+              - heading "ویدیوها" [level=3] [ref=e141]
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - generic [ref=e145]: ❤️
+                - generic [ref=e146]:
+                  - paragraph [ref=e147]: "0"
+                  - text: آمار کل
+              - heading "لایک‌های کل" [level=3] [ref=e149]
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - heading "به پنل مدیریت خوش آمدید 👋" [level=1] [ref=e153]
+              - paragraph [ref=e154]: امروز چه برنامه‌ای برای مدیریت خبرگزاری دارید؟
+            - generic [ref=e155]:
+              - generic [ref=e156]:
+                - generic [ref=e157]:
+                  - img [ref=e160]
+                  - generic [ref=e165]:
+                    - paragraph [ref=e166]: 1,250
+                    - text: آمار کل
+                - heading "کل کاربران" [level=3] [ref=e168]
+              - generic [ref=e169]:
+                - generic [ref=e170]:
+                  - img [ref=e173]
+                  - generic [ref=e177]:
+                    - paragraph [ref=e178]: "12"
+                    - text: آمار کل
+                - heading "دسته‌بندی‌ها" [level=3] [ref=e180]
+              - generic [ref=e181]:
+                - generic [ref=e182]:
+                  - img [ref=e185]
+                  - generic [ref=e188]:
+                    - paragraph [ref=e189]: "458"
+                    - text: آمار کل
+                - heading "تعداد اخبار" [level=3] [ref=e191]
+              - generic [ref=e192]:
+                - generic [ref=e193]:
+                  - img [ref=e196]
+                  - generic [ref=e198]:
+                    - paragraph [ref=e199]: "24"
+                    - text: آمار کل
+                - heading "نظرات جدید" [level=3] [ref=e201]
+            - generic [ref=e204]:
+              - heading "پلتفرم مدیریت هوشمند محتوای رسانه" [level=2] [ref=e205]
+              - paragraph [ref=e206]: با استفاده از ابزارهای پیشرفته مدیریت، محتوای خود را کنترل کنید، آمار بازدیدها را بررسی نمایید و با مخاطبان خود در ارتباط باشید.
+              - generic [ref=e207]:
+                - button "مشاهده آمار پیشرفته" [ref=e208]
+                - button "راهنمای کاربری" [ref=e209]
+  - region "Notifications Alt+T":
+    - alert [ref=e213]:
+      - img [ref=e215]
+      - text: خوش آمدید
+      - button "close" [ref=e217] [cursor=pointer]:
+        - img [ref=e218]
+      - progressbar "notification timer" [ref=e222]
+```
