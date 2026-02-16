@@ -1,0 +1,12 @@
+{
+  "name": "supabase-project-test",
+  "version": "1.0.0",
+  "description": "Test script for Supabase connection",
+  "type": "module",
+  "scripts": {
+    "test:supabase": "node test-supabase.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}

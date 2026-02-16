@@ -4,18 +4,40 @@ import fs from "fs";
 import Category from "../models/categoryModel.js";
 import Users from "../models/userModel.js";
 import { Op } from "sequelize";
-import { error } from "console";
 
-// تابع دریافت همه ی خبر ها
+// تابع دریافت همه ی خبر ها با pagination و optimization
 export const getAllNews = async (req, res) => {
   try {
-    const news = await News.findAll({
-      include: [Users],
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count, rows: news } = await News.findAndCountAll({
+      include: [
+        {
+          model: Users,
+          attributes: ['id', 'name', 'email', 'url']
+        },
+        {
+          model: Category,
+          attributes: ['id', 'name']
+        }
+      ],
+      order: [['id', 'DESC']],
+      limit,
+      offset,
+      distinct: true
     });
-    res.json(news);
+
+    res.status(200).json({
+      news,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      totalItems: count
+    });
   } catch (error) {
-    console.log(`we have some error on getAllNews function :
-        ${error}`);
+    console.error(`Error in getAllNews: ${error.message}`);
+    res.status(500).json({ error: "خطا در دریافت اخبار" });
   }
 };
 

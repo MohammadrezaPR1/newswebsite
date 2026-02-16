@@ -1,9 +1,16 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { createClient } from "@supabase/supabase-js"; // Added for temp client
+import { createClient } from "@supabase/supabase-js";
 import "../../customToast.css";
 import { supabase } from "../../supabaseClient";
+import { 
+    uploadFile, 
+    uploadMultipleFiles, 
+    deleteFile, 
+    getPaginatedData,
+    retryOperation 
+} from "../../utils/supabaseHelpers";
 
 const toastStyle = {
     direction: "rtl",
@@ -34,6 +41,11 @@ export const AdminContextProvider = ({ children }) => {
     const [profileImage, setProfileImage] = useState("");
     const [profileName, setProfileName] = useState("");
     const [commentsList, setCommentsList] = useState([]);
+    
+    // Pagination states
+    const [newsPage, setNewsPage] = useState(1);
+    const [newsTotalPages, setNewsTotalPages] = useState(1);
+    const [newsLoading, setNewsLoading] = useState(false);
 
     // Check auth state on load
     useEffect(() => {
@@ -331,77 +343,101 @@ export const AdminContextProvider = ({ children }) => {
             getAllCategories();
             navigate("/admin-view-categories");
         }
-    };
-
-    // --- News Extensions ---
-
-    const createNews = async (data) => {
-        let imageUrl = "";
-        let videoUrl = "";
-        let imagesDetails = [];
+    };const loadingToast = toast.loading("در حال آپلود خبر...", {
+            position: "bottom-center",
+            style: toastStyle
+        });
 
         try {
-            // Upload main image
-            if (data.file) {
-                const fileName = `${Date.now()}_${data.file.name}`;
-                const { error: upErr } = await supabase.storage.from('news-images').upload(fileName, data.file);
-                if (!upErr) {
-                    const { data: urlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
-                    imageUrl = urlData.publicUrl;
-                } else {
-                    console.error("Image upload error:", upErr);
-                }
+            // Validate required fields
+            if (!data.file) {
+                toast.dismiss(loadingToast);
+                toast.error("لطفاً عکس اصلی را انتخاب کنید", { 
+                    position: "bottom-center", 
+                    style: toastStyle 
+                });
+                return;
+            }
+
+            let imageUrl = "";
+            let videoUrl = "";
+            let imagesUrls = [];
+
+            // Upload main image with retry
+            const mainImageResult = await retryOperation(
+                () => uploadFile(data.file, 'news-images')
+            );
+            
+            if (mainImageResult) {
+                imageUrl = mainImageResult.url;
+            } else {
+                throw new Error("خطا در آپلود تصویر اصلی");
             }
 
             // Upload video if exists
             if (data.video) {
-                const fileName = `vid_${Date.now()}_${data.video.name}`;
-                const { error: vidErr } = await supabase.storage.from('videos').upload(fileName, data.video);
-                if (!vidErr) {
-                    const { data: vUrlData } = supabase.storage.from('videos').getPublicUrl(fileName);
-                    videoUrl = vUrlData.publicUrl;
-                } else {
-                    console.error("Video upload error:", vidErr);
+                const videoResult = await uploadFile(data.video, 'videos');
+                if (videoResult) {
+                    videoUrl = videoResult.url;
                 }
             }
 
             // Upload multiple images
             if (data.images && data.images.length > 0) {
-                for (const imgFile of data.images) {
-                    const fileName = `${Date.now()}_${imgFile.name}`;
-                    const { error: mErr } = await supabase.storage.from('news-images').upload(fileName, imgFile);
-                    if (!mErr) {
-                        const { data: mUrlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
-                        imagesDetails.push(mUrlData.publicUrl);
-                    }
-                }
+                const imagesResults = await uploadMultipleFiles(data.images, 'news-images');
+                imagesUrls = imagesResults.map(r => r.url);
             }
 
+            // Prepare news data
             const newsData = {
                 title: data.title,
                 description: data.description,
-                subTitle1: data.subTitle1,
-                subDescription1: data.subDescription1,
-                subTitle2: data.subTitle2,
-                subDescription2: data.subDescription2,
-                subTitle3: data.subTitle3,
-                subDescription3: data.subDescription3,
-                subTitle4: data.subTitle4,
-                subDescription4: data.subDescription4,
+                subTitle1: data.subTitle1 || null,
+                subDescription1: data.subDescription1 || null,
+                subTitle2: data.subTitle2 || null,
+                subDescription2: data.subDescription2 || null,
+                subTitle3: data.subTitle3 || null,
+                subDescription3: data.subDescription3 || null,
+                subTitle4: data.subTitle4 || null,
+                subDescription4: data.subDescription4 || null,
                 catId: parseInt(data.catId),
                 userId: userId,
                 image: imageUrl,
+                url: imageUrl, // برای compatibility
                 video: videoUrl,
-                images: imagesDetails
+                videoUrl: videoUrl,
+                images: imagesUrls,
+                imagesUrl: imagesUrls,
+                numViews: 0,
+                numLike: 0
             };
 
+            // Insert news
             const { error } = await supabase.from('news').insert(newsData);
+            
             if (error) {
-                toast.error("خطا در ایجاد خبر", { position: "bottom-center", style: toastStyle });
                 console.error("Insert error:", error);
-            } else {
-                toast.success("خبر ایجاد شد", { position: "bottom-center", style: toastStyle });
-                navigate("/admin-view-news");
+                throw error;
+            }
+
+            toast.dismiss(loadingToast);
+            toast.success("خبر با موفقیت ایجاد شد", { 
+                position: "bottom-center", 
+                style: toastStyle,
+                icon: "✅"
+            });
+            
+            navigate("/admin-view-news");
+            handleNews();
+            
+        } catch (err) {
+            console.error("Error in createNews:", err);
+            toast.dismiss(loadingToast);
+            toast.error(err.message || "خطا در ایجاد خبر", { 
+                position: "bottom-center", 
+                style: toastStyle,
+                icon: "❌"
+           
                 handleNews();
             }
         } catch (err) {
@@ -410,30 +446,84 @@ export const AdminContextProvider = ({ children }) => {
         }
     };
 
-    const handleNews = async () => {
+    const handleNews = useCallback(async (page = 1, pageSize = 10) => {
+        setNewsLoading(true);
+        
         try {
-            const { data, error } = await supabase.from('news').select(`
-              *,
-              users (name),
-              category (name)
-            `).order('created_at', { ascending: false });
+            const { data, count, totalPages } = await getPaginatedData(
+                'news',
+                page,
+                pageSize,
+                {
+                    relations: ['users', 'category'],
+                    orderBy: { column: 'created_at', ascending: false }
+                }
+            );
 
-            if (!error) {
-                const mapped = (data || []).map(item => ({
-                    ...item,
-                    url: item.image, // Map image to url for components
-                    createdAt: item.created_at
-                }));
-                setNewsList(mapped);
-            }
-        } catch (err) { console.error(err); }
-    };
+            // Map data for compatibility with existing components
+            const mapped = (data || []).map(item => ({
+                ...item,
+                url: item.image,
+                createdAt: item.created_at,
+                user: item.users,
+                category: item.category
+            }));
+
+            setNewsList(mapped);
+            setNewsPage(page);
+            setNewsTotalPages(totalPages);
+        } catch (err) {
+            console.error('Error fetching news:', err);
+            toast.error("خطا در دریافت اخبار", { 
+                position: "bottom-center", 
+                style: toastStyle 
+            });
+        } finally {
+            setNewsLoading(false);
+        }
+    }, []);
 
     const deleteNews = async (id) => {
-        const { error } = await supabase.from('news').delete().eq('id', id);
-        if (!error) {
-            toast.success("خبر حذف شد", { position: "bottom-center", style: toastStyle });
-            handleNews();
+        const confirmed = window.confirm("آیا مطمئن هستید که می‌خواهید این خبر را حذف کنید؟");
+        if (!confirmed) return;
+
+        const loadingToast = toast.loading("در حال حذف...", {
+            position: "bottom-center",
+            style: toastStyle
+        });
+
+        try {
+            // Get news details to delete associated files
+            const { data: newsData } = await supabase
+                .from('news')
+                .select('image, video, images')
+                .eq('id', id)
+                .single();
+
+            // Delete from database
+            const { error } = await supabase.from('news').delete().eq('id', id);
+            
+            if (error) throw error;
+
+            // Delete associated files from storage (optional - can be done via background job)
+            // Note: Extract filename from URL and delete
+            
+            toast.dismiss(loadingToast);
+            toast.success("خبر با موفقیت حذف شد", { 
+                position: "bottom-center", 
+                style: toastStyle,
+                icon: "✅"
+            });
+            
+            handleNews(newsPage);
+        } catch (err) {
+            console.error('Error deleting news:', err);
+            toast.dismiss(loadingToast);
+            toast.error("خطا در حذف خبر", { 
+                position: "bottom-center", 
+                style: toastStyle,
+                icon: "❌"
+            });
         }
     };
 
@@ -455,60 +545,78 @@ export const AdminContextProvider = ({ children }) => {
     };
 
     const updateNews = async (data) => {
-        try {
-            // If new files are provided, upload them. Otherwise keep old URLs.
-            // This simplified version assumes current values in 'data' are the ones to use.
-            // If the UI passes file objects for new uploads, we should handle them.
+        const loadingToast = toast.loading("در حال بروزرسانی خبر...", {
+            position: "bottom-center",
+            style: toastStyle
+        });
 
+        try {
             let imageUrl = data.image;
             let videoUrl = data.video;
+            let imagesUrls = data.images || [];
 
+            // Upload new main image if provided
             if (data.file instanceof File) {
-                const fileName = `${Date.now()}_${data.file.name}`;
-                const { error: upErr } = await supabase.storage.from('news-images').upload(fileName, data.file);
-                if (!upErr) {
-                    const { data: urlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
-                    imageUrl = urlData.publicUrl;
-                }
+                const result = await retryOperation(
+                    () => uploadFile(data.file, 'news-images')
+                );
+                if (result) imageUrl = result.url;
             }
 
+            // Upload new video if provided
             if (data.videoFile instanceof File) {
-                const fileName = `vid_${Date.now()}_${data.videoFile.name}`;
-                const { error: vidErr } = await supabase.storage.from('videos').upload(fileName, data.videoFile);
-                if (!vidErr) {
-                    const { data: vUrlData } = supabase.storage.from('videos').getPublicUrl(fileName);
-                    videoUrl = vUrlData.publicUrl;
-                }
+                const result = await uploadFile(data.videoFile, 'videos');
+                if (result) videoUrl = result.url;
+            }
+
+            // Upload new images if provided
+            if (data.newImages && data.newImages.length > 0) {
+                const results = await uploadMultipleFiles(data.newImages, 'news-images');
+                imagesUrls = [...imagesUrls, ...results.map(r => r.url)];
             }
 
             const updates = {
                 title: data.title,
                 description: data.description,
-                subTitle1: data.subTitle1,
-                subDescription1: data.subDescription1,
-                subTitle2: data.subTitle2,
-                subDescription2: data.subDescription2,
-                subTitle3: data.subTitle3,
-                subDescription3: data.subDescription3,
-                subTitle4: data.subTitle4,
-                subDescription4: data.subDescription4,
+                subTitle1: data.subTitle1 || null,
+                subDescription1: data.subDescription1 || null,
+                subTitle2: data.subTitle2 || null,
+                subDescription2: data.subDescription2 || null,
+                subTitle3: data.subTitle3 || null,
+                subDescription3: data.subDescription3 || null,
+                subTitle4: data.subTitle4 || null,
+                subDescription4: data.subDescription4 || null,
                 catId: parseInt(data.catId),
                 image: imageUrl,
-                video: videoUrl
+                url: imageUrl,
+                video: videoUrl,
+                videoUrl: videoUrl,
+                images: imagesUrls,
+                imagesUrl: imagesUrls,
+                updated_at: new Date().toISOString()
             };
 
             const { error } = await supabase.from('news').update(updates).eq('id', data.id);
 
-            if (!error) {
-                toast.success("خبر با موفقیت ویرایش شد", { position: "bottom-center", style: toastStyle });
-                handleNews();
-                navigate('/admin-view-news');
-            } else {
-                toast.error("خطا در ویرایش خبر", { position: "bottom-center", style: toastStyle });
-                console.error(error);
-            }
+            if (error) throw error;
+
+            toast.dismiss(loadingToast);
+            toast.success("خبر با موفقیت ویرایش شد", { 
+                position: "bottom-center", 
+                style: toastStyle,
+                icon: "✅"
+            });
+            
+            handleNews(newsPage);
+            navigate('/admin-view-news');
         } catch (err) {
-            console.error(err);
+            console.error('Error updating news:', err);
+            toast.dismiss(loadingToast);
+            toast.error("خطا در ویرایش خبر", { 
+                position: "bottom-center", 
+                style: toastStyle,
+                icon: "❌"
+            });
         }
     };
 
@@ -644,6 +752,10 @@ export const AdminContextProvider = ({ children }) => {
             newsList,
             getNewsById,
             updateNews,
+            newsPage,
+            newsTotalPages,
+            newsLoading,
+            setNewsPage,
 
             getAllVideos,
             videosList,
