@@ -14,7 +14,7 @@ const formSchema = yup.object({
 
 const AddNews = () => {
     const { getAllCategories, categoryList, createNews } = useContext(AdminContext);
-    const [file, setFile] = useState([]);
+    const [file, setFile] = useState(null);
     const [preview, setPreview] = useState("");
     const [images, setImages] = useState([]);
     const [video, setVideo] = useState(null);

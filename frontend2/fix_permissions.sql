@@ -40,9 +40,7 @@ DROP POLICY IF EXISTS "Admin Update News" ON "public"."news";
 DROP POLICY IF EXISTS "Admin Delete News" ON "public"."news";
 
 CREATE POLICY "Public Read News" ON "public"."news" FOR SELECT USING (true);
-CREATE POLICY "Admin Insert News" ON "public"."news" FOR INSERT WITH CHECK (public.is_admin());
-CREATE POLICY "Admin Update News" ON "public"."news" FOR UPDATE USING (public.is_admin());
-CREATE POLICY "Admin Delete News" ON "public"."news" FOR DELETE USING (public.is_admin());
+CREATE POLICY "Authenticated Manage News" ON "public"."news" FOR ALL USING (auth.role() = 'authenticated');
 
 
 -- ==========================================
@@ -55,9 +53,7 @@ DROP POLICY IF EXISTS "Admin Update Video" ON "public"."video";
 DROP POLICY IF EXISTS "Admin Delete Video" ON "public"."video";
 
 CREATE POLICY "Public Read Video" ON "public"."video" FOR SELECT USING (true);
-CREATE POLICY "Admin Insert Video" ON "public"."video" FOR INSERT WITH CHECK (public.is_admin());
-CREATE POLICY "Admin Update Video" ON "public"."video" FOR UPDATE USING (public.is_admin());
-CREATE POLICY "Admin Delete Video" ON "public"."video" FOR DELETE USING (public.is_admin());
+CREATE POLICY "Authenticated Manage Video" ON "public"."video" FOR ALL USING (auth.role() = 'authenticated');
 
 
 -- ==========================================

@@ -70,12 +70,26 @@ export const HomeContextProvider = ({ children }) => {
         }
     };
 
+    const formatNewsData = (data) => {
+        if (!data) return [];
+        const wrap = Array.isArray(data) ? data : [data];
+        return wrap.map(item => ({
+            ...item,
+            url: item.image, // Map image to url for components
+            createdAt: item.created_at, // Map created_at to createdAt
+        }));
+    };
+
     const loadLastPosts = async () => {
         try {
             lsatPostDispatch({ type: LAST_POST_REQUEST });
-            const { data, error } = await supabase.from('news').select('*').order('created_at', { ascending: false }).limit(6);
+            const { data, error } = await supabase
+                .from('news')
+                .select('*, category(name), users(name)')
+                .order('created_at', { ascending: false })
+                .limit(6);
             if (error) throw error;
-            lsatPostDispatch({ type: LAST_POST_SUCCESS, payload: data });
+            lsatPostDispatch({ type: LAST_POST_SUCCESS, payload: formatNewsData(data) });
         } catch (error) {
             lsatPostDispatch({ type: LAST_POST_FAIL, payload: error.message });
         }
@@ -84,10 +98,13 @@ export const HomeContextProvider = ({ children }) => {
     const loadPopularNews = async () => {
         try {
             popularNewsDispatch({ type: POPULAR_NEWS_REQUEST });
-            // Popular = most views
-            const { data, error } = await supabase.from('news').select('*').order('numViews', { ascending: false }).limit(4);
+            const { data, error } = await supabase
+                .from('news')
+                .select('*, category(name), users(name)')
+                .order('numViews', { ascending: false })
+                .limit(4);
             if (error) throw error;
-            popularNewsDispatch({ type: POPULAR_NEWS_SUCCESS, payload: data });
+            popularNewsDispatch({ type: POPULAR_NEWS_SUCCESS, payload: formatNewsData(data) });
         } catch (error) {
             popularNewsDispatch({ type: POPULAR_NEWS_FAIL, payload: error.message });
         }
@@ -96,10 +113,12 @@ export const HomeContextProvider = ({ children }) => {
     const loadCategoryNews = async (categoryId) => {
         try {
             categoryNewsDispatch({ type: CATEGORY_NEWS_REQUEST });
-            // categoryId from query param usually
-            const { data, error } = await supabase.from('news').select('*').eq('catId', categoryId);
+            const { data, error } = await supabase
+                .from('news')
+                .select('*, category(name), users(name)')
+                .eq('catId', categoryId);
             if (error) throw error;
-            categoryNewsDispatch({ type: CATEGORY_NEWS_SUCCESS, payload: data });
+            categoryNewsDispatch({ type: CATEGORY_NEWS_SUCCESS, payload: formatNewsData(data) });
         } catch (error) {
             categoryNewsDispatch({ type: CATEGORY_NEWS_FAIL, payload: error.message });
         }
@@ -108,9 +127,13 @@ export const HomeContextProvider = ({ children }) => {
     const loadMostView = async () => {
         try {
             mostViewDispatch({ type: MOST_VIEW_REQUEST });
-            const { data, error } = await supabase.from('news').select('*').order('numViews', { ascending: false }).limit(5);
+            const { data, error } = await supabase
+                .from('news')
+                .select('*, category(name), users(name)')
+                .order('numViews', { ascending: false })
+                .limit(5);
             if (error) throw error;
-            mostViewDispatch({ type: MOST_VIEW_SUCCESS, payload: data });
+            mostViewDispatch({ type: MOST_VIEW_SUCCESS, payload: formatNewsData(data) });
         } catch (error) {
             mostViewDispatch({ type: MOST_VIEW_FAIL, payload: error.message });
         }
@@ -133,14 +156,23 @@ export const HomeContextProvider = ({ children }) => {
     };
 
     const loadNewsDtail = async (id) => {
-        // Just increments view count? 
-        // Or fetches detail? Assuming view increment based on backend logic usually.
-        // Let's increment view count
-        await supabase.rpc('increment_news_view', { row_id: id });
-        // RPC needed or just update:
-        // const { data } = await supabase.from('news').select('numViews').eq('id', id).single();
-        // await supabase.from('news').update({ numViews: data.numViews + 1 }).eq('id', id);
-        // Better to use RPC for atomicity but update is fine for now
+        try {
+            // Increment view count
+            await supabase.rpc('increment_news_view', { row_id: id });
+
+            // Fetch and return the data for direct access/refresh
+            const { data, error } = await supabase
+                .from('news')
+                .select('*, category(name), users(name)')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+            return formatNewsData(data)[0];
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
     };
 
     const createComment = async (data) => {

@@ -256,10 +256,9 @@ export const AdminContextProvider = ({ children }) => {
     // Simplification: updateProfile calling editUser logic or specific logic
     const updateProfile = async (data) => {
         // Upload image if exists
-        let imageUrl = null;
-        if (data.file) {
-            const fileExt = data.file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+        let imageUrl = data.image; // Keep existing
+        if (data.file instanceof File) {
+            const fileName = `${Date.now()}_${data.file.name}`;
             const { error: uploadError } = await supabase.storage
                 .from('profile-images')
                 .upload(fileName, data.file);
@@ -339,59 +338,95 @@ export const AdminContextProvider = ({ children }) => {
     const createNews = async (data) => {
         let imageUrl = "";
         let videoUrl = "";
-        let imagesDetails = []; // simplified
+        let imagesDetails = [];
 
-        // Upload main image
-        if (data.file) {
-            const fileName = `${Date.now()}_${data.file.name}`;
-            const { error: upErr } = await supabase.storage.from('news-images').upload(fileName, data.file);
-            if (!upErr) {
-                const { data: urlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
-                imageUrl = urlData.publicUrl;
+        try {
+            // Upload main image
+            if (data.file) {
+                const fileName = `${Date.now()}_${data.file.name}`;
+                const { error: upErr } = await supabase.storage.from('news-images').upload(fileName, data.file);
+                if (!upErr) {
+                    const { data: urlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
+                    imageUrl = urlData.publicUrl;
+                } else {
+                    console.error("Image upload error:", upErr);
+                }
             }
-        }
 
-        // Upload video if exists
-        if (data.video) {
-            // Logic for video upload to 'videos' bucket
-            const fileName = `vid_${Date.now()}`;
-            // assuming data.video is a file object
-            // implementation skipped for brevity, similar to image
-        }
+            // Upload video if exists
+            if (data.video) {
+                const fileName = `vid_${Date.now()}_${data.video.name}`;
+                const { error: vidErr } = await supabase.storage.from('videos').upload(fileName, data.video);
+                if (!vidErr) {
+                    const { data: vUrlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+                    videoUrl = vUrlData.publicUrl;
+                } else {
+                    console.error("Video upload error:", vidErr);
+                }
+            }
 
-        const newsData = {
-            title: data.title,
-            description: data.description,
-            subTitle1: data.subTitle1,
-            subDescription1: data.subDescription1,
-            subTitle2: data.subTitle2,
-            subDescription2: data.subDescription2,
-            subTitle3: data.subTitle3,
-            subDescription3: data.subDescription3,
-            subTitle4: data.subTitle4,
-            subDescription4: data.subDescription4,
-            catId: parseInt(data.catId),
-            userId: userId,
-            image: imageUrl,
-            video: videoUrl
-        };
+            // Upload multiple images
+            if (data.images && data.images.length > 0) {
+                for (const imgFile of data.images) {
+                    const fileName = `${Date.now()}_${imgFile.name}`;
+                    const { error: mErr } = await supabase.storage.from('news-images').upload(fileName, imgFile);
+                    if (!mErr) {
+                        const { data: mUrlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
+                        imagesDetails.push(mUrlData.publicUrl);
+                    }
+                }
+            }
 
-        const { error } = await supabase.from('news').insert(newsData);
-        if (error) {
-            toast.error("خطا در ایجاد خبر", { position: "bottom-center", style: toastStyle });
-        } else {
-            toast.success("خبر ایجاد شد", { position: "bottom-center", style: toastStyle });
-            navigate("/admin-view-news");
+            const newsData = {
+                title: data.title,
+                description: data.description,
+                subTitle1: data.subTitle1,
+                subDescription1: data.subDescription1,
+                subTitle2: data.subTitle2,
+                subDescription2: data.subDescription2,
+                subTitle3: data.subTitle3,
+                subDescription3: data.subDescription3,
+                subTitle4: data.subTitle4,
+                subDescription4: data.subDescription4,
+                catId: parseInt(data.catId),
+                userId: userId,
+                image: imageUrl,
+                video: videoUrl,
+                images: imagesDetails
+            };
+
+            const { error } = await supabase.from('news').insert(newsData);
+            if (error) {
+                toast.error("خطا در ایجاد خبر", { position: "bottom-center", style: toastStyle });
+                console.error("Insert error:", error);
+            } else {
+                toast.success("خبر ایجاد شد", { position: "bottom-center", style: toastStyle });
+                navigate("/admin-view-news");
+                handleNews();
+            }
+        } catch (err) {
+            console.error("Error in createNews:", err);
+            toast.error("خطای سیستمی در ایجاد خبر", { position: "bottom-center", style: toastStyle });
         }
     };
 
     const handleNews = async () => {
-        const { data, error } = await supabase.from('news').select(`
-          *,
-          users (name),
-          category (name)
-        `);
-        if (!error) setNewsList(data);
+        try {
+            const { data, error } = await supabase.from('news').select(`
+              *,
+              users (name),
+              category (name)
+            `).order('created_at', { ascending: false });
+
+            if (!error) {
+                const mapped = (data || []).map(item => ({
+                    ...item,
+                    url: item.image, // Map image to url for components
+                    createdAt: item.created_at
+                }));
+                setNewsList(mapped);
+            }
+        } catch (err) { console.error(err); }
     };
 
     const deleteNews = async (id) => {
@@ -403,25 +438,77 @@ export const AdminContextProvider = ({ children }) => {
     };
 
     const getNewsById = async (id) => {
-        const { data } = await supabase.from('news').select('*').eq('id', id).single();
-        setNewsById(data);
-        return data; // Compatible return
+        try {
+            const { data, error } = await supabase.from('news').select('*').eq('id', id).single();
+            if (error) throw error;
+            const mapped = {
+                ...data,
+                url: data.image,
+                createdAt: data.created_at
+            };
+            setNewsById(mapped);
+            return mapped;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
     };
 
     const updateNews = async (data) => {
-        // Similar upload logic as createNews, then update
-        // Simplified for this file
+        try {
+            // If new files are provided, upload them. Otherwise keep old URLs.
+            // This simplified version assumes current values in 'data' are the ones to use.
+            // If the UI passes file objects for new uploads, we should handle them.
 
-        const { error } = await supabase.from('news').update({
-            title: data.title,
-            description: data.description,
-            // ... other fields
-        }).eq('id', data.id);
+            let imageUrl = data.image;
+            let videoUrl = data.video;
 
-        if (!error) {
-            toast.success("خبر ویرایش شد", { position: "bottom-center", style: toastStyle });
-            handleNews();
-            navigate('/admin-view-news');
+            if (data.file instanceof File) {
+                const fileName = `${Date.now()}_${data.file.name}`;
+                const { error: upErr } = await supabase.storage.from('news-images').upload(fileName, data.file);
+                if (!upErr) {
+                    const { data: urlData } = supabase.storage.from('news-images').getPublicUrl(fileName);
+                    imageUrl = urlData.publicUrl;
+                }
+            }
+
+            if (data.videoFile instanceof File) {
+                const fileName = `vid_${Date.now()}_${data.videoFile.name}`;
+                const { error: vidErr } = await supabase.storage.from('videos').upload(fileName, data.videoFile);
+                if (!vidErr) {
+                    const { data: vUrlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+                    videoUrl = vUrlData.publicUrl;
+                }
+            }
+
+            const updates = {
+                title: data.title,
+                description: data.description,
+                subTitle1: data.subTitle1,
+                subDescription1: data.subDescription1,
+                subTitle2: data.subTitle2,
+                subDescription2: data.subDescription2,
+                subTitle3: data.subTitle3,
+                subDescription3: data.subDescription3,
+                subTitle4: data.subTitle4,
+                subDescription4: data.subDescription4,
+                catId: parseInt(data.catId),
+                image: imageUrl,
+                video: videoUrl
+            };
+
+            const { error } = await supabase.from('news').update(updates).eq('id', data.id);
+
+            if (!error) {
+                toast.success("خبر با موفقیت ویرایش شد", { position: "bottom-center", style: toastStyle });
+                handleNews();
+                navigate('/admin-view-news');
+            } else {
+                toast.error("خطا در ویرایش خبر", { position: "bottom-center", style: toastStyle });
+                console.error(error);
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -433,24 +520,33 @@ export const AdminContextProvider = ({ children }) => {
     };
 
     const addVideo = async (data) => {
-        // Upload to 'videos' bucket
-        let vidUrl = "";
-        if (data.file) {
-            const fileName = `${Date.now()}_${data.file.name}`;
-            await supabase.storage.from('videos').upload(fileName, data.file);
-            const { data: u } = supabase.storage.from('videos').getPublicUrl(fileName);
-            vidUrl = u.publicUrl;
-        }
+        try {
+            let vidUrl = "";
+            if (data.file) {
+                const fileName = `${Date.now()}_${data.file.name}`;
+                const { error: upErr } = await supabase.storage.from('videos').upload(fileName, data.file);
+                if (!upErr) {
+                    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+                    vidUrl = urlData.publicUrl;
+                }
+            }
 
-        const { error } = await supabase.from('video').insert({
-            title: data.title,
-            description: data.description,
-            video: vidUrl
-        });
+            const { error } = await supabase.from('video').insert({
+                title: data.title,
+                description: data.description,
+                video: vidUrl,
+                url: vidUrl
+            });
 
-        if (!error) {
-            toast.success("ویدیو اضافه شد", { position: "bottom-center", style: toastStyle });
-            navigate("/admin-view-videos");
+            if (!error) {
+                toast.success("ویدیو با موفقیت اضافه شد", { position: "bottom-center", style: toastStyle });
+                getAllVideos();
+                navigate('/admin-view-videos');
+            } else {
+                toast.error("خطا در اضافه کردن ویدیو", { position: "bottom-center", style: toastStyle });
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -461,13 +557,33 @@ export const AdminContextProvider = ({ children }) => {
     };
 
     const editVideo = async (data) => {
-        // update logic
-        await supabase.from('video').update({
-            title: data.title,
-            description: data.description
-        }).eq('id', data.id);
-        toast.success("ویدیو ویرایش شد", { position: "bottom-center", style: toastStyle });
-        navigate("/admin-view-videos");
+        try {
+            let vidUrl = data.video;
+
+            if (data.file instanceof File) {
+                const fileName = `${Date.now()}_${data.file.name}`;
+                const { error: upErr } = await supabase.storage.from('videos').upload(fileName, data.file);
+                if (!upErr) {
+                    const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
+                    vidUrl = urlData.publicUrl;
+                }
+            }
+
+            const { error } = await supabase.from('video').update({
+                title: data.title,
+                description: data.description,
+                video: vidUrl,
+                url: vidUrl
+            }).eq('id', data.id);
+
+            if (!error) {
+                toast.success("ویدیو ویرایش شد", { position: "bottom-center", style: toastStyle });
+                getAllVideos();
+                navigate('/admin-view-videos');
+            }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     // --- Comments Extensions ---

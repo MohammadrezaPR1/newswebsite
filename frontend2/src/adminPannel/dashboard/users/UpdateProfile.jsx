@@ -16,7 +16,7 @@ const formSchema = yup.object({
 const UpdateProfile = () => {
     const { updateProfile, profileName, profileImage, userInfo } = useContext(AdminContext);
     const { id } = useParams();
-    const [file, setFile] = useState([]);
+    const [file, setFile] = useState(null);
     const [preview, setPreview] = useState("");
 
     useEffect(() => {

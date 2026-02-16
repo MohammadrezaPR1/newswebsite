@@ -24,16 +24,28 @@ export default function NewsDetail() {
   const banners = [banner, banner2, banner3, banner4];
   const [likedStatus, setLikedStatus] = useState('none');
   const [showHeart, setShowHeart] = useState(false);
+  const [newsData, setNewsData] = useState(state);
+  const [loading, setLoading] = useState(!state);
 
   const effectRan = useRef(false);
 
   useEffect(() => {
-    // اگر قبلاً اجرا شده، دوباره اجرا نکن
+    const init = async () => {
+      if (!newsData) {
+        setLoading(true);
+        const data = await loadNewsDtail(id);
+        setNewsData(data);
+        setLoading(false);
+      } else {
+        loadNewsDtail(id);
+      }
+    }
+
     if (effectRan.current === false) {
-      loadNewsDtail(id);
+      init();
       effectRan.current = true;
     }
-  }, [id]);
+  }, [id, newsData]);
 
   useEffect(() => {
     window.scrollTo({
@@ -110,7 +122,13 @@ export default function NewsDetail() {
 
         {/* بخش اصلی خبر */}
         <div className="w-full lg:w-3/5 bg-white shadow-xl rounded-2xl overflow-hidden p-6 border border-gray-200 relative">
-          <NewsMain data={state} />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <NewsMain data={newsData} />
+          )}
 
           {/* بخش لایک خبر */}
           <div className="mt-6 mb-6 text-center bg-gray-100 rounded-xl p-4 shadow-sm border border-gray-200 relative">
@@ -119,16 +137,15 @@ export default function NewsDetail() {
             </p>
             <button
               onClick={handleLike}
-              className={`flex items-center justify-center gap-2 mx-auto px-6 py-3 rounded-full shadow-md text-white transition-all duration-300 ${
-                likedStatus === 'liked' ? "bg-red-500 scale-105" : 
-                likedStatus === 'disliked' ? "bg-gray-500 scale-105" : 
-                "bg-red-400 hover:bg-red-500"
+              className={`flex items-center justify-center gap-2 mx-auto px-6 py-3 rounded-full shadow-md text-white transition-all duration-300 ${likedStatus === 'liked' ? "bg-red-500 scale-105" :
+                likedStatus === 'disliked' ? "bg-gray-500 scale-105" :
+                  "bg-red-400 hover:bg-red-500"
                 }`}
             >
               <FaHeart className={`text-xl ${likedStatus === 'liked' ? "animate-pulse" : ""}`} />
-              {likedStatus === 'liked' ? "شما لایک کردید" : 
-               likedStatus === 'disliked' ? "شما دیسلایک کردید" : 
-               "لایک"}
+              {likedStatus === 'liked' ? "شما لایک کردید" :
+                likedStatus === 'disliked' ? "شما دیسلایک کردید" :
+                  "لایک"}
             </button>
           </div>
 
