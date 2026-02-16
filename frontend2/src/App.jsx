@@ -9,6 +9,7 @@ import ViewNews from './adminPannel/dashboard/news/ViewNews';
 
 import Login from './adminPannel/login/Login'
 import './index.css'
+import 'react-toastify/dist/ReactToastify.css';
 import './customToast.css'
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
