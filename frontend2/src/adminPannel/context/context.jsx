@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { createClient } from "@supabase/supabase-js"; // Added for temp client
 import "../../customToast.css";
 import { supabase } from "../../supabaseClient";
 
@@ -132,25 +133,75 @@ export const AdminContextProvider = ({ children }) => {
 
     const register = async (data) => {
         try {
-            const { data: authData, error } = await supabase.auth.signUp({
+            // Backend Logic Replication:
+            // 1. Check password match (already done in UI usually, but good to have)
+            if (data.password !== data.confPassword) {
+                toast.error("پسورد و تکرار آن همخوانی ندارند", { position: "bottom-center", style: toastStyle });
+                return;
+            }
+
+            // 2. Create User using a secondary client to AVOID logging out the current admin
+            // This replicates "Admin creates user" without session switch.
+            // We use the same URL and Key, but with persistSession: false
+            const tempSupabase = createClient(
+                import.meta.env.VITE_SUPABASE_URL,
+                import.meta.env.VITE_SUPABASE_ANON_KEY,
+                {
+                    auth: {
+                        persistSession: false, // This is crucial!
+                        autoRefreshToken: false,
+                    }
+                }
+            );
+
+            // 3. Register the user
+            const { data: authData, error } = await tempSupabase.auth.signUp({
                 email: data.email,
                 password: data.password,
                 options: {
                     data: {
-                        name: data.name, // This meta_data will be used by the trigger to populate public.users
+                        name: data.name,
+                        // We store isAdmin in metadata initially, so triggers can use it, 
+                        // or we manually update public.users below.
+                        isAdmin: data.isAdmin
                     }
                 }
             });
 
             if (error) {
-                toast.error(error.message, { position: "bottom-center", style: toastStyle });
+                // Handle Rate Limit specifically
+                if (error.message.includes("rate limit")) {
+                    toast.error("تعداد درخواست‌ها بیش از حد مجاز است. لطفاً چند لحظه صبر کنید یا ایمیل‌ها را تایید نکنید.", { position: "bottom-center", style: toastStyle });
+                } else {
+                    toast.error(error.message, { position: "bottom-center", style: toastStyle });
+                }
             } else {
+                // 4. Manually ensure public.users is updated/synced if needed
+                // If we have a trigger, it might be enough. 
+                // But to be sure (like backend did direct DB insert):
+                if (authData.user) {
+                    // We can try to update the user immediately to ensure isAdmin is true if passed
+                    // This requires the current session (Admin) to have permission.
+                    // The Admin IS logged in (main supabase client).
+                    if (data.isAdmin) {
+                        // Wait a brief moment for trigger if it exists
+                        // Or just upsert.
+                        const { error: profileError } = await supabase
+                            .from('users')
+                            .update({ isAdmin: true, name: data.name })
+                            .eq('id', authData.user.id);
+
+                        if (profileError) console.log("Profile update error", profileError);
+                    }
+                }
+
                 toast.success("کاربر با موفقیت ساخته شد", { position: "bottom-center", style: toastStyle });
                 getAllUsers();
                 navigate("/admin-view-users");
             }
         } catch (error) {
             console.log(error);
+            toast.error("خطای سیستمی", { position: "bottom-center", style: toastStyle });
         }
     };
 
